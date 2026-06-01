@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaxoSort — Enterprise Learning Content Classifier</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #080808;
+  --s1:      #0F0F0F;
+  --s2:      #161616;
+  --s3:      #1E1E1E;
+  --s4:      #262626;
+  --b1:      rgba(255,255,255,0.06);
+  --b2:      rgba(255,255,255,0.10);
+  --b3:      rgba(255,255,255,0.16);
+  --t1:      #F5F5F5;
+  --t2:      #A0A0A0;
+  --t3:      #505050;
+  --orange:  #F97316;
+  --or-d:    rgba(249,115,22,0.08);
+  --or-m:    rgba(249,115,22,0.20);
+  --green:   #22C55E;
+  --yellow:  #F59E0B;
+  --red:     #EF4444;
+  --gn-d:    rgba(34,197,94,0.10);
+  --yw-d:    rgba(245,158,11,0.10);
+  --rd-d:    rgba(239,68,68,0.10);
+  --sans:    'Inter', sans-serif;
+  --mono:    'JetBrains Mono', monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100vh;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--s1);}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--orange);}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--b1);background:rgba(8,8,8,0.95);backdrop-filter:blur(20px);}
+.hdr-in{max-width:1320px;margin:0 auto;padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.logo{display:flex;align-items:center;gap:11px;}
+.logo-mark{width:34px;height:34px;background:var(--orange);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.logo-title{font-size:17px;font-weight:800;letter-spacing:-0.5px;}
+.logo-title span{color:var(--orange);}
+.logo-sub{font-size:9.5px;font-family:var(--mono);color:var(--t3);letter-spacing:1.2px;display:block;margin-top:1px;}
+.hdr-tags{display:flex;gap:6px;align-items:center;}
+.tag{font-size:10px;font-family:var(--mono);color:var(--t3);background:var(--s2);border:1px solid var(--b1);border-radius:100px;padding:3px 11px;white-space:nowrap;}
+.tag.live{color:var(--orange);border-color:rgba(249,115,22,0.3);background:var(--or-d);}
+
+/* ── WRAP ── */
+.wrap{max-width:1320px;margin:0 auto;padding:0 32px 80px;}
+
+/* ── HERO ── */
+.hero{padding:52px 0 44px;border-bottom:1px solid var(--b1);margin-bottom:36px;}
+.hero-grid{display:grid;grid-template-columns:1fr 220px;gap:56px;align-items:start;}
+.eyebrow{font-size:10.5px;font-family:var(--mono);color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:'';width:18px;height:1px;background:var(--orange);}
+.h1{font-size:clamp(30px,4vw,50px);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:14px;}
+.h1 em{font-style:normal;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,0.25);}
+.hero-sub{font-size:14.5px;color:var(--t2);line-height:1.75;max-width:560px;}
+.hero-sub strong{color:var(--t1);font-weight:600;}
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:28px;}
+.pain{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:16px 18px;transition:border-color .2s;}
+.pain:hover{border-color:var(--b2);}
+.pain-n{font-size:22px;font-weight:800;color:var(--orange);font-family:var(--mono);line-height:1;margin-bottom:5px;}
+.pain-l{font-size:11.5px;color:var(--t2);line-height:1.55;}
+.hero-kpis{display:flex;flex-direction:column;gap:10px;}
+.kpi{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:16px 18px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;background:var(--orange);}
+.kpi-val{font-size:30px;font-weight:800;font-family:var(--mono);color:var(--t1);line-height:1;margin-bottom:3px;}
+.kpi-key{font-size:10px;color:var(--t3);font-family:var(--mono);}
+.int-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:22px;}
+.int-lbl{font-size:10px;font-family:var(--mono);color:var(--t3);}
+.int-b{font-size:10px;font-family:var(--mono);color:var(--t3);background:var(--s2);border:1px solid var(--b1);border-radius:100px;padding:3px 11px;display:flex;align-items:center;gap:5px;}
+.int-b .dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
+
+/* ── SECTION HEAD ── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sl{font-size:10px;font-family:var(--mono);color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.sl .n{color:var(--orange);}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;overflow:hidden;margin-bottom:18px;}
+.ct{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--b1);background:var(--s2);}
+.ct-title{font-size:12px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:8px;}
+.ct-icon{width:24px;height:24px;background:var(--s3);border:1px solid var(--b1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.cb{padding:22px;}
+
+/* ── CONFIG GRID ── */
+.cfg{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:1px;background:var(--b1);}
+.cfg-panel{background:var(--s1);padding:18px 22px;}
+.cfg-label{font-size:9.5px;font-family:var(--mono);color:var(--t3);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:11px;}
+
+/* ── PROVIDER ── */
+.prov-list{display:flex;flex-direction:column;gap:5px;}
+.prov-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:transparent;border:1px solid var(--b1);color:var(--t2);cursor:pointer;transition:all .15s;text-align:left;width:100%;position:relative;}
+.prov-btn:hover{background:var(--s3);border-color:var(--b2);color:var(--t1);}
+.prov-btn.active{background:var(--or-d);border-color:rgba(249,115,22,0.35);color:var(--t1);}
+.prov-btn.active::after{content:'✓';position:absolute;right:11px;font-size:11px;color:var(--orange);font-weight:700;}
+.prov-ico{font-size:16px;flex-shrink:0;}
+.prov-name{font-size:12.5px;font-weight:600;display:block;}
+.prov-model{font-size:9.5px;font-family:var(--mono);color:var(--t3);display:block;margin-top:1px;}
+
+/* ── FRAMEWORK ── */
+.fw-list{display:flex;flex-direction:column;gap:5px;}
+.fw-btn{padding:9px 12px;border-radius:8px;background:transparent;border:1px solid var(--b1);color:var(--t2);cursor:pointer;transition:all .15s;text-align:left;width:100%;position:relative;}
+.fw-btn:hover{background:var(--s3);border-color:var(--b2);color:var(--t1);}
+.fw-btn.active{background:var(--or-d);border-color:rgba(249,115,22,0.35);color:var(--t1);}
+.fw-btn.active::after{content:'✓';position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--orange);font-weight:700;}
+.fw-name{font-size:12.5px;font-weight:600;display:block;margin-bottom:2px;}
+.fw-desc{font-size:9.5px;font-family:var(--mono);color:var(--t3);}
+
+/* ── API ── */
+.api-wrap{display:flex;flex-direction:column;gap:10px;}
+.api-row{display:flex;align-items:center;background:var(--bg);border:1px solid var(--b2);border-radius:8px;overflow:hidden;transition:border-color .2s;}
+.api-row:focus-within{border-color:var(--orange);}
+.api-pfx{font-family:var(--mono);font-size:9.5px;color:var(--t3);background:var(--s3);padding:0 11px;height:42px;display:flex;align-items:center;border-right:1px solid var(--b1);white-space:nowrap;letter-spacing:.4px;}
+.api-row input{flex:1;background:transparent;border:none;outline:none;font-family:var(--mono);font-size:12px;color:var(--t1);padding:0 13px;height:42px;}
+.api-row input::placeholder{color:var(--t3);}
+.api-eye{background:none;border:none;cursor:pointer;color:var(--t3);padding:0 11px;height:42px;display:flex;align-items:center;transition:color .15s;font-size:12px;}
+.api-eye:hover{color:var(--orange);}
+.api-meta{display:flex;align-items:center;justify-content:space-between;}
+.api-status{display:flex;align-items:center;gap:6px;font-size:10.5px;font-family:var(--mono);color:var(--t3);}
+.api-dot{width:6px;height:6px;border-radius:50%;background:var(--t3);}
+.api-dot.ok{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.4);}
+.api-dot.bad{background:var(--red);}
+.api-lnk{font-size:10.5px;font-family:var(--mono);color:var(--t3);text-decoration:none;transition:color .15s;}
+.api-lnk:hover{color:var(--orange);}
+.demo-note{background:var(--or-d);border:1px solid rgba(249,115,22,.18);border-radius:7px;padding:10px 14px;font-size:11px;color:rgba(249,115,22,.85);line-height:1.6;}
+
+/* ── INPUT ── */
+.input-layout{display:grid;grid-template-columns:1fr 210px;gap:14px;align-items:start;}
+textarea{width:100%;min-height:196px;background:var(--bg);border:1px solid var(--b2);border-radius:9px;padding:15px;resize:vertical;font-family:var(--mono);font-size:12px;color:var(--t1);line-height:1.85;outline:none;transition:border-color .2s;}
+textarea:focus{border-color:var(--orange);}
+textarea::placeholder{color:var(--t3);}
+.ta-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:12px;flex-wrap:wrap;}
+.ta-count{font-size:10.5px;font-family:var(--mono);color:var(--t3);}
+.presets{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.preset{font-size:10px;font-family:var(--mono);color:var(--t3);background:var(--s2);border:1px solid var(--b1);border-radius:100px;padding:3px 10px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.preset:hover{border-color:var(--orange);color:var(--orange);background:var(--or-d);}
+.input-side{display:flex;flex-direction:column;gap:8px;}
+.run-btn{width:100%;padding:13px;background:var(--orange);border:none;border-radius:9px;color:#000;font-family:var(--sans);font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;letter-spacing:.1px;}
+.run-btn:hover:not(:disabled){background:#FB923C;box-shadow:0 8px 28px rgba(249,115,22,.28);transform:translateY(-1px);}
+.run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.side-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--b2);border-radius:9px;color:var(--t2);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.side-btn:hover{border-color:var(--orange);color:var(--orange);background:var(--or-d);}
+.side-hint{font-size:10px;font-family:var(--mono);color:var(--t3);line-height:1.7;padding-top:2px;}
+kbd{font-family:var(--mono);font-size:9px;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:2px 5px;color:var(--t3);}
+
+/* ── PROGRESS ── */
+.prog-wrap{margin:12px 0 4px;}
+.prog-track{height:2px;background:var(--s3);border-radius:1px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--orange);border-radius:1px;transition:width .3s ease;position:relative;}
+.prog-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:28px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35));animation:sh 1s ease infinite;}
+@keyframes sh{0%,100%{opacity:0}50%{opacity:1}}
+.prog-meta{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;font-family:var(--mono);color:var(--t3);}
+
+/* ── STATUS ── */
+.status-msg{display:flex;align-items:flex-start;gap:9px;padding:11px 15px;border-radius:8px;font-size:12.5px;margin:10px 0;animation:fu .25s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.s-info{background:rgba(30,95,168,.1);border:1px solid rgba(30,95,168,.25);color:#7FBBFF;}
+.s-ok{background:var(--gn-d);border:1px solid rgba(34,197,94,.25);color:var(--green);}
+.s-err{background:var(--rd-d);border:1px solid rgba(239,68,68,.25);color:var(--red);}
+.s-warn{background:var(--or-d);border:1px solid rgba(249,115,22,.25);color:var(--orange);}
+.spinner{width:13px;height:13px;border:1.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;margin-top:1px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── RESULTS LAYOUT ── */
+.res-layout{display:grid;grid-template-columns:1fr 272px;gap:1px;background:var(--b1);border-radius:16px;overflow:hidden;border:1px solid var(--b1);}
+.res-main{background:var(--s1);}
+.res-aside{background:var(--s2);}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--b1);background:var(--s2);flex-wrap:wrap;}
+.srch{display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--b2);border-radius:7px;padding:0 11px;flex:1;min-width:140px;transition:border-color .2s;}
+.srch:focus-within{border-color:var(--orange);}
+.srch input{background:none;border:none;outline:none;font-family:var(--mono);font-size:11.5px;color:var(--t1);height:34px;width:100%;}
+.srch input::placeholder{color:var(--t3);}
+.srch-ico{color:var(--t3);font-size:12px;flex-shrink:0;}
+.fsel{background:var(--bg);border:1px solid var(--b2);border-radius:7px;padding:0 28px 0 10px;height:34px;font-family:var(--mono);font-size:10.5px;color:var(--t2);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23505050'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;transition:border-color .2s;min-width:115px;}
+.fsel:focus,.fsel:hover{border-color:var(--orange);}
+.fres{font-size:10px;font-family:var(--mono);color:var(--t3);white-space:nowrap;}
+.exp-grp{display:flex;gap:5px;}
+.ebtn{font-size:10.5px;font-family:var(--mono);background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:0 11px;height:34px;color:var(--t2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.ebtn:hover{border-color:var(--orange);color:var(--orange);background:var(--or-d);}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:640px;}
+thead{background:var(--s2);}
+thead th{padding:10px 15px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:1.3px;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--b1);cursor:pointer;user-select:none;transition:color .15s;}
+thead th:hover{color:var(--orange);}
+thead th:first-child{width:36px;padding-left:18px;}
+thead th:last-child{width:66px;text-align:center;}
+tbody tr{border-bottom:1px solid var(--b1);transition:background .12s;animation:ri .3s ease both;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:rgba(255,255,255,.02);}
+@keyframes ri{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
+td{padding:12px 15px;vertical-align:top;}
+td:first-child{padding-left:18px;}
+.tn{font-family:var(--mono);font-size:10px;color:var(--t3);padding-top:14px;}
+.ttitle{font-size:13px;font-weight:500;color:var(--t1);line-height:1.4;max-width:260px;}
+.taxpath{display:flex;flex-direction:column;gap:4px;}
+.taxrow{display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
+.chip{font-family:var(--mono);font-size:9.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--b1);color:var(--t2);background:var(--s3);white-space:nowrap;}
+.chip.c1{color:var(--orange);background:var(--or-d);border-color:rgba(249,115,22,.18);}
+.chip.c2{color:var(--t1);background:var(--s4);border-color:var(--b2);}
+.chip.c3{color:var(--t2);}
+.chip.c4{color:var(--t3);font-size:8.5px;}
+.tsep{color:var(--t3);font-size:8px;}
+.conf{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:100px;font-weight:500;}
+.conf::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;}
+.c-hi{color:var(--green);background:var(--gn-d);border:1px solid rgba(34,197,94,.2);}
+.c-me{color:var(--yellow);background:var(--yw-d);border:1px solid rgba(245,158,11,.2);}
+.c-lo{color:var(--red);background:var(--rd-d);border:1px solid rgba(239,68,68,.2);}
+.abtn{background:none;border:none;cursor:pointer;color:var(--t3);font-size:11px;padding:3px 6px;border-radius:4px;transition:all .12s;}
+.abtn:hover{color:var(--orange);background:var(--or-d);}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:72px 32px;color:var(--t3);}
+.empty-ico{font-size:44px;margin-bottom:14px;opacity:.35;}
+.empty-t{font-size:15px;font-weight:600;color:var(--t2);margin-bottom:7px;}
+.empty-s{font-size:12.5px;line-height:1.7;}
+
+/* ── ASIDE ── */
+.ab{padding:18px 20px;border-bottom:1px solid var(--b1);}
+.ab:last-child{border-bottom:none;}
+.ab-title{font-size:9px;font-family:var(--mono);color:var(--t3);letter-spacing:1.3px;text-transform:uppercase;margin-bottom:12px;}
+.big{font-size:34px;font-weight:800;font-family:var(--mono);color:var(--t1);line-height:1;}
+.big-s{font-size:10px;color:var(--t3);margin-top:4px;}
+.hbar-wrap{background:var(--s3);height:5px;border-radius:3px;overflow:hidden;}
+.hbar-fill{height:100%;border-radius:3px;background:var(--green);transition:width .6s ease;}
+.hmeta{display:flex;justify-content:space-between;margin-top:5px;font-size:9.5px;font-family:var(--mono);color:var(--t3);}
+.cb-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.cb-lbl{font-size:9.5px;font-family:var(--mono);width:36px;flex-shrink:0;}
+.cb-bw{flex:1;background:var(--s3);height:3px;border-radius:2px;overflow:hidden;}
+.cb-bf{height:100%;border-radius:2px;transition:width .5s ease;}
+.cb-n{font-size:9.5px;font-family:var(--mono);color:var(--t3);width:18px;text-align:right;flex-shrink:0;}
+.dom-item{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;}
+.dom-name{font-size:11px;color:var(--t2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dom-cnt{font-size:9.5px;font-family:var(--mono);color:var(--orange);background:var(--or-d);border:1px solid rgba(249,115,22,.18);padding:1px 8px;border-radius:100px;flex-shrink:0;}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--b1);padding:22px 0;margin-top:36px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:10.5px;color:var(--t3);font-family:var(--mono);}
+.ft-links{display:flex;gap:18px;}
+.ft-lnk{color:var(--t3);text-decoration:none;transition:color .15s;}
+.ft-lnk:hover{color:var(--orange);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:920px){
+  .wrap,.hdr-in{padding-left:16px;padding-right:16px;}
+  .hero-grid,.cfg,.input-layout,.res-layout{grid-template-columns:1fr;}
+  .hero-kpis,.res-aside{display:none;}
+  .pain-grid{grid-template-columns:repeat(2,1fr);}
+  .cfg{gap:0;}
+  .cfg-panel{border-bottom:1px solid var(--b1);}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="logo">
+      <div class="logo-mark">🗂</div>
+      <div>
+        <div class="logo-title">Taxo<span>Sort</span></div>
+        <span class="logo-sub">ENTERPRISE CONTENT CLASSIFIER</span>
+      </div>
+    </div>
+    <div class="hdr-tags">
+      <span class="tag live">● Live</span>
+      <span class="tag">Claude · Gemini · OpenAI</span>
+      <span class="tag">3 Taxonomy Frameworks</span>
+      <span class="tag">LMS-Ready Export</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Addressing Real Business Challenges</div>
+      <h1 class="h1">Stop Tagging.<br>Start <em>Scaling.</em></h1>
+      <p class="hero-sub">
+        Content teams at fast-growing companies lose <strong>hours each week</strong> to manual classification. Inconsistent taxonomy breaks LMS search, inflates licensing costs, and fragments learner journeys across departments. <strong>TaxoSort eliminates that overhead — instantly.</strong>
+      </p>
+      <div class="pain-grid">
+        <div class="pain">
+          <div class="pain-n">40%</div>
+          <div class="pain-l">of L&D team capacity lost to manual content tagging & metadata work</div>
+        </div>
+        <div class="pain">
+          <div class="pain-n">3×</div>
+          <div class="pain-l">longer LMS onboarding when taxonomy is inconsistent across departments</div>
+        </div>
+        <div class="pain">
+          <div class="pain-n">$0</div>
+          <div class="pain-l">extra cost — BYOK model, no per-seat fee, deploy it as your own tool</div>
+        </div>
+      </div>
+      <div class="int-strip">
+        <span class="int-lbl">Export-ready for:</span>
+        <span class="int-b"><span class="dot"></span>SAP SuccessFactors</span>
+        <span class="int-b"><span class="dot"></span>Cornerstone</span>
+        <span class="int-b"><span class="dot"></span>Moodle</span>
+        <span class="int-b"><span class="dot"></span>Workday Learning</span>
+        <span class="int-b"><span class="dot"></span>Any LMS via CSV / JSON</span>
+      </div>
+    </div>
+    <div class="hero-kpis">
+      <div class="kpi"><div class="kpi-val" id="kTotal">15</div><div class="kpi-key">titles classified</div></div>
+      <div class="kpi"><div class="kpi-val" id="kHigh">12</div><div class="kpi-key">high confidence</div></div>
+      <div class="kpi"><div class="kpi-val" id="kDomains">7</div><div class="kpi-key">unique domains</div></div>
+      <div class="kpi"><div class="kpi-val" id="kHealth">80%</div><div class="kpi-key">content health score</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 1 — CONFIGURE -->
+<div class="sh"><div class="sl"><span class="n">01</span> Configure AI Provider & Taxonomy Framework</div></div>
+<div class="card">
+  <div class="cfg">
+
+    <div class="cfg-panel">
+      <div class="cfg-label">AI Provider</div>
+      <div class="prov-list">
+        <button class="prov-btn active" onclick="selProv('claude')" id="p-claude">
+          <span class="prov-ico">🟣</span>
+          <span><span class="prov-name">Claude</span><span class="prov-model">claude-sonnet-4-20250514</span></span>
+        </button>
+        <button class="prov-btn" onclick="selProv('gemini')" id="p-gemini">
+          <span class="prov-ico">💎</span>
+          <span><span class="prov-name">Gemini</span><span class="prov-model">gemini-2.0-flash</span></span>
+        </button>
+        <button class="prov-btn" onclick="selProv('openai')" id="p-openai">
+          <span class="prov-ico">🟢</span>
+          <span><span class="prov-name">OpenAI GPT-4o</span><span class="prov-model">gpt-4o-mini</span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="cfg-panel">
+      <div class="cfg-label">Taxonomy Framework</div>
+      <div class="fw-list">
+        <button class="fw-btn active" onclick="selFw('standard')" id="f-standard">
+          <span class="fw-name">Standard L&D</span>
+          <span class="fw-desc">Domain → Category → Subcategory → Topic</span>
+        </button>
+        <button class="fw-btn" onclick="selFw('blooms')" id="f-blooms">
+          <span class="fw-name">Bloom's Taxonomy</span>
+          <span class="fw-desc">Level → Domain → Skill → Learning Outcome</span>
+        </button>
+        <button class="fw-btn" onclick="selFw('competency')" id="f-competency">
+          <span class="fw-name">Skills & Competency</span>
+          <span class="fw-desc">Function → Competency → Skill → Proficiency</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="cfg-panel">
+      <div class="cfg-label">API Configuration</div>
+      <div class="api-wrap">
+        <div class="api-row">
+          <span class="api-pfx" id="apiLabel">ANTHROPIC_KEY</span>
+          <input type="password" id="apiKey" placeholder="Paste your API key here…" oninput="valKey()"/>
+          <button class="api-eye" onclick="togVis()">👁</button>
+        </div>
+        <div class="api-meta">
+          <div class="api-status"><span class="api-dot" id="apiDot"></span><span id="apiTxt">No key — demo mode active</span></div>
+          <a class="api-lnk" id="apiLnk" href="https://console.anthropic.com/keys" target="_blank">Get key ↗</a>
+        </div>
+        <div class="demo-note" id="demoNote">
+          ⚡ <strong>Demo data is pre-loaded</strong> — explore the full interface now. Add your API key above to classify your own content with live AI.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- STEP 2 — INPUT -->
+<div class="sh"><div class="sl"><span class="n">02</span> Input Content Titles</div></div>
+<div class="card">
+  <div class="cb">
+    <div class="input-layout">
+      <div>
+        <textarea id="inputArea"
+          placeholder="Paste learning content titles here, one per line…&#10;&#10;Example:&#10;SAP S/4HANA Financial Accounting Fundamentals&#10;Introduction to Machine Learning for Business Analysts&#10;GDPR Compliance for HR Professionals"
+          oninput="updCount()"></textarea>
+        <div class="ta-foot">
+          <span class="ta-count" id="titCount">0 titles</span>
+          <div class="presets">
+            <span style="font-size:9.5px;font-family:var(--mono);color:var(--t3);">Add samples:</span>
+            <span class="preset" onclick="addPre('SAP')">SAP</span>
+            <span class="preset" onclick="addPre('Tech')">Technology</span>
+            <span class="preset" onclick="addPre('Business')">Business</span>
+            <span class="preset" onclick="addPre('Data')">Data Science</span>
+            <span class="preset" onclick="addPre('HR')">HR & Compliance</span>
+            <span class="preset" onclick="clrIn()">✕ Clear</span>
+          </div>
+        </div>
+      </div>
+      <div class="input-side">
+        <button class="run-btn" id="runBtn" onclick="runClassify()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="5,3 19,12 5,21"/></svg>
+          Classify Now
+        </button>
+        <button class="side-btn" onclick="loadFull()">⚡ Load Full Demo</button>
+        <div class="side-hint">
+          One title per line<br>
+          Optimal: 5–30 items<br>
+          <kbd>Ctrl</kbd>+<kbd>↵</kbd> to run
+        </div>
+      </div>
+    </div>
+    <div id="statusArea"></div>
+    <div id="progWrap" style="display:none;" class="prog-wrap">
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="prog-meta"><span id="progLbl">Processing…</span><span id="progPct">0%</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 — RESULTS -->
+<div class="sh" style="margin-top:4px;">
+  <div class="sl"><span class="n">03</span> Classification Results</div>
+  <span id="resCount" style="font-size:10px;font-family:var(--mono);color:var(--t3);">0 results</span>
+</div>
+
+<div class="res-layout">
+  <div class="res-main">
+    <div class="fbar">
+      <div class="srch">
+        <span class="srch-ico">🔍</span>
+        <input id="searchIn" placeholder="Filter results…" oninput="doFilter()"/>
+      </div>
+      <select class="fsel" id="confFil" onchange="doFilter()">
+        <option value="">All Confidence</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <select class="fsel" id="domFil" onchange="doFilter()" style="min-width:130px;">
+        <option value="">All Domains</option>
+      </select>
+      <span class="fres" id="fResCount"></span>
+      <div class="exp-grp">
+        <button class="ebtn" onclick="expCSV()" id="csvBtn" style="display:none;">⬇ CSV</button>
+        <button class="ebtn" onclick="expJSON()" id="jsonBtn" style="display:none;">⬇ JSON</button>
+        <button class="ebtn" onclick="cpAll()" id="cpBtn" style="display:none;">📋 Copy</button>
+      </div>
+    </div>
+
+    <div class="empty" id="emptyState">
+      <div class="empty-ico">🗂</div>
+      <div class="empty-t">Ready to classify</div>
+      <div class="empty-s">Load demo data or paste your own titles above,<br>then hit Classify Now.</div>
+    </div>
+
+    <div class="tbl-wrap" id="tblWrap" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th onclick="srt('title')">TITLE ↕</th>
+            <th>TAXONOMY PATH</th>
+            <th onclick="srt('confidence')">CONF ↕</th>
+            <th style="text-align:center;">⋯</th>
+          </tr>
+        </thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <aside class="res-aside">
+    <div class="ab">
+      <div class="ab-title">Content Health Score</div>
+      <div class="big" id="asideHealth">—</div>
+      <div class="big-s">% high-confidence classifications</div>
+      <div style="margin-top:10px;">
+        <div class="hbar-wrap"><div class="hbar-fill" id="hbarFill" style="width:0%"></div></div>
+        <div class="hmeta"><span>Needs review</span><span>Excellent</span></div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-title">Confidence Breakdown</div>
+      <div class="cb-row"><span class="cb-lbl" style="color:var(--green);">HIGH</span><div class="cb-bw"><div class="cb-bf" style="background:var(--green);width:0%" id="bh"></div></div><span class="cb-n" id="nh">0</span></div>
+      <div class="cb-row"><span class="cb-lbl" style="color:var(--yellow);">MED</span><div class="cb-bw"><div class="cb-bf" style="background:var(--yellow);width:0%" id="bm"></div></div><span class="cb-n" id="nm">0</span></div>
+      <div class="cb-row"><span class="cb-lbl" style="color:var(--red);">LOW</span><div class="cb-bw"><div class="cb-bf" style="background:var(--red);width:0%" id="bl"></div></div><span class="cb-n" id="nl">0</span></div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-title">Top Domains</div>
+      <div id="domList"><span style="font-size:11px;color:var(--t3);">No data yet</span></div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-title">Active Framework</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:3px;" id="asideFwName">Standard L&D</div>
+      <div style="font-size:9.5px;font-family:var(--mono);color:var(--t3);" id="asideFwDesc">Domain → Category → Subcategory → Topic</div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-title">Export & Share</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="side-btn" style="justify-content:flex-start;font-size:11.5px;" onclick="expCSV()">⬇ Download CSV (LMS-ready)</button>
+        <button class="side-btn" style="justify-content:flex-start;font-size:11.5px;" onclick="expJSON()">⬇ Download JSON (API-ready)</button>
+        <button class="side-btn" style="justify-content:flex-start;font-size:11.5px;" onclick="cpAll()">📋 Copy All as JSON</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <div>TaxoSort · Enterprise Learning Content Classifier · <span style="color:var(--orange);">BYOK</span> — Bring Your Own API Key · Zero data retention</div>
+  <div class="ft-links">
+    <a class="ft-lnk" href="https://console.anthropic.com/keys" target="_blank">Claude API ↗</a>
+    <a class="ft-lnk" href="https://aistudio.google.com/app/apikey" target="_blank">Gemini API ↗</a>
+    <a class="ft-lnk" href="https://platform.openai.com/api-keys" target="_blank">OpenAI API ↗</a>
+  </div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+/* ─────────────────────────────────────────
+   SAMPLE BANKS
+───────────────────────────────────────── */
+const BANKS = {
+  SAP:[
+    'SAP S/4HANA Financial Accounting Fundamentals',
+    'SAP BTP Integration Suite for Enterprise Developers',
+    'SAP SuccessFactors: End-to-End Talent Management',
+    'SAP Fiori UX Design Principles and Accessibility',
+    'SAP Analytics Cloud: Building Executive Dashboards'
+  ],
+  Tech:[
+    'Introduction to Machine Learning for Business Analysts',
+    'Cloud Infrastructure Security and Zero Trust Architecture',
+    'Python for Data Engineering: Beginner to Intermediate',
+    'Microservices with Docker, Kubernetes, and CI/CD Pipelines',
+    'Designing RESTful APIs for Enterprise Platforms'
+  ],
+  Business:[
+    'Strategic Thinking and Decision-Making for Senior Managers',
+    'Managing High-Performance Remote and Hybrid Teams',
+    'Advanced Negotiation Skills for Business Development',
+    'Design Thinking and Innovation for Product Teams',
+    'Executive Communication: Presence, Clarity, and Impact'
+  ],
+  Data:[
+    'Excel for Business Intelligence: Power Query and Pivot Tables',
+    'Supply Chain Analytics and KPI Dashboards with Power BI',
+    'Data Governance, Lineage, and Master Data Management',
+    'SQL for Business Analysts: Intermediate to Advanced',
+    'Taxonomy Design and Metadata Management for LMS'
+  ],
+  HR:[
+    'GDPR and Data Privacy Compliance for HR Professionals',
+    'ESG Reporting Frameworks and Corporate Sustainability',
+    'Unconscious Bias and Inclusive Leadership in Practice',
+    'Performance Management Frameworks for Modern Teams',
+    'Onboarding Excellence: The First 90 Days'
+  ]
+};
+
+const DEMO = [
+  {title:'SAP S/4HANA Financial Accounting Fundamentals',l1:'Enterprise Software',l2:'SAP Solutions',l3:'Financial Accounting',l4:'Core Finance & Controlling',confidence:'high'},
+  {title:'Introduction to Machine Learning for Business Analysts',l1:'Technology',l2:'Artificial Intelligence',l3:'Machine Learning',l4:'ML for Business Audiences',confidence:'high'},
+  {title:'GDPR and Data Privacy Compliance for HR Professionals',l1:'Compliance & Legal',l2:'Data Protection',l3:'GDPR & Privacy Law',l4:'HR Compliance Obligations',confidence:'high'},
+  {title:'Strategic Thinking and Decision-Making for Senior Managers',l1:'Leadership & Management',l2:'Strategic Management',l3:'Decision-Making',l4:'Senior Leadership Skills',confidence:'high'},
+  {title:'Excel for Business Intelligence: Power Query and Pivot Tables',l1:'Technology',l2:'Data Tools',l3:'Microsoft Excel',l4:'BI & Analytics',confidence:'high'},
+  {title:'Managing High-Performance Remote and Hybrid Teams',l1:'Leadership & Management',l2:'People Management',l3:'Remote Work Leadership',l4:'Hybrid Team Dynamics',confidence:'medium'},
+  {title:'Taxonomy Design and Metadata Management for LMS',l1:'Knowledge Management',l2:'Information Architecture',l3:'Taxonomy & Ontology',l4:'Metadata Classification',confidence:'high'},
+  {title:'Supply Chain Analytics and KPI Dashboards with Power BI',l1:'Business Analytics',l2:'Data Visualisation',l3:'Power BI',l4:'Supply Chain Performance',confidence:'medium'},
+  {title:'ESG Reporting Frameworks and Corporate Sustainability',l1:'Compliance & Legal',l2:'Sustainability',l3:'ESG Reporting',l4:'Corporate Standards',confidence:'high'},
+  {title:'SAP BTP Integration Suite for Enterprise Developers',l1:'Enterprise Software',l2:'SAP Solutions',l3:'SAP BTP',l4:'Integration & API Services',confidence:'high'},
+  {title:'Cloud Infrastructure Security and Zero Trust Architecture',l1:'Technology',l2:'Cybersecurity',l3:'Cloud Security',l4:'Zero Trust Framework',confidence:'high'},
+  {title:'Microservices with Docker, Kubernetes, and CI/CD Pipelines',l1:'Technology',l2:'Software Architecture',l3:'Containerisation',l4:'Cloud-Native DevOps',confidence:'high'},
+  {title:'Python for Data Engineering: Beginner to Intermediate',l1:'Technology',l2:'Programming',l3:'Python',l4:'Data Engineering',confidence:'high'},
+  {title:'Advanced Negotiation Skills for Business Development',l1:'Professional Skills',l2:'Communication',l3:'Negotiation & Influence',l4:'B2B & Partnerships',confidence:'medium'},
+  {title:'Onboarding Excellence: The First 90 Days',l1:'Human Resources',l2:'Talent Management',l3:'Onboarding & Integration',l4:'Employee Experience',confidence:'high'}
+];
+
+/* ─────────────────────────────────────────
+   FRAMEWORKS & PROVIDERS
+───────────────────────────────────────── */
+const FW = {
+  standard:{ name:'Standard L&D', desc:'Domain → Category → Subcategory → Topic', fields:['domain','category','subcategory','topic'], prompt:'Classify into a standard enterprise L&D taxonomy: domain (broad field), category (subject area), subcategory (specific discipline), topic (precise learning focus).' },
+  blooms:  { name:"Bloom's Taxonomy", desc:'Level → Domain → Skill → Learning Outcome', fields:['cognitive level','learning domain','skill area','learning outcome'], prompt:"Classify using Bloom's Revised Taxonomy: cognitive level (Remember/Understand/Apply/Analyze/Evaluate/Create), learning domain, skill area, and measurable learning outcome." },
+  competency:{ name:'Skills & Competency', desc:'Function → Competency → Skill → Proficiency', fields:['job function','core competency','specific skill','proficiency level'], prompt:'Classify using an enterprise competency framework: job function, core competency, specific skill, and proficiency level (Foundation/Practitioner/Expert/Master).' }
+};
+
+const PROV = {
+  claude:{ label:'ANTHROPIC_KEY', ph:'sk-ant-api03-…', lnk:'https://console.anthropic.com/keys', ltxt:'console.anthropic.com ↗' },
+  gemini:{ label:'GEMINI_API_KEY', ph:'AIzaSy…', lnk:'https://aistudio.google.com/app/apikey', ltxt:'aistudio.google.com ↗' },
+  openai:{ label:'OPENAI_API_KEY', ph:'sk-proj-…', lnk:'https://platform.openai.com/api-keys', ltxt:'platform.openai.com ↗' }
+};
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+const S = { prov:'claude', fw:'standard', results:[], filtered:[], sortDir:1 };
+
+/* ─────────────────────────────────────────
+   PROVIDER / FRAMEWORK
+───────────────────────────────────────── */
+function selProv(p) {
+  S.prov = p;
+  document.querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('p-'+p).classList.add('active');
+  const c = PROV[p];
+  document.getElementById('apiLabel').textContent = c.label;
+  document.getElementById('apiKey').placeholder = c.ph;
+  document.getElementById('apiKey').value = '';
+  document.getElementById('apiLnk').href = c.lnk;
+  document.getElementById('apiLnk').textContent = c.ltxt;
+  valKey();
+}
+
+function selFw(f) {
+  S.fw = f;
+  document.querySelectorAll('.fw-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-'+f).classList.add('active');
+  document.getElementById('asideFwName').textContent = FW[f].name;
+  document.getElementById('asideFwDesc').textContent = FW[f].desc;
+}
+
+function togVis() { const i=document.getElementById('apiKey'); i.type=i.type==='password'?'text':'password'; }
+
+function valKey() {
+  const k=document.getElementById('apiKey').value.trim();
+  const dot=document.getElementById('apiDot'), txt=document.getElementById('apiTxt'), note=document.getElementById('demoNote');
+  if(!k){ dot.className='api-dot'; txt.textContent='No key — demo mode active'; note.style.display='block'; }
+  else if(k.length<20){ dot.className='api-dot bad'; txt.textContent='Key seems too short'; note.style.display='none'; }
+  else{ dot.className='api-dot ok'; txt.textContent='Key ready · Calls go direct to provider'; note.style.display='none'; }
+}
+
+/* ─────────────────────────────────────────
+   INPUT
+───────────────────────────────────────── */
+function addPre(cat) { const a=document.getElementById('inputArea'); a.value=(a.value.trim()?a.value.trim()+'\n':'')+BANKS[cat].join('\n'); updCount(); }
+function loadFull() { document.getElementById('inputArea').value=Object.values(BANKS).flat().join('\n'); updCount(); }
+function clrIn() { document.getElementById('inputArea').value=''; updCount(); }
+function updCount() { const n=getTitles().length; document.getElementById('titCount').textContent=n+' title'+(n!==1?'s':''); }
+function getTitles() { return document.getElementById('inputArea').value.split('\n').map(t=>t.trim()).filter(Boolean); }
+
+document.addEventListener('keydown', e => { if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runClassify();} });
+
+/* ─────────────────────────────────────────
+   STATUS / PROGRESS
+───────────────────────────────────────── */
+function setStatus(msg, type, spin=false) {
+  document.getElementById('statusArea').innerHTML=`<div class="status-msg s-${type}">${spin?'<div class="spinner"></div>':''}<span>${msg}</span></div>`;
+}
+function setProgress(pct, label) {
+  const w=document.getElementById('progWrap');
+  if(pct===null){w.style.display='none';return;}
+  w.style.display='block';
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progLbl').textContent=label||'';
+  document.getElementById('progPct').textContent=pct+'%';
+}
+
+/* ─────────────────────────────────────────
+   API CALLERS
+───────────────────────────────────────── */
+const SYS = fw => `You are an enterprise learning taxonomy expert. ${FW[fw].prompt} Return ONLY valid JSON: {"l1":"","l2":"","l3":"","l4":"","confidence":"high|medium|low"}. No markdown, no preamble.`;
+
+async function callClaude(t,k,fw) {
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,system:SYS(fw),messages:[{role:'user',content:'Classify: "'+t+'"'}]})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Claude '+r.status);}
+  const d=await r.json(); return JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+}
+async function callGemini(t,k,fw) {
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:SYS(fw)+'\n\nClassify: "'+t+'"'}]}],generationConfig:{temperature:0.1,maxOutputTokens:200}})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Gemini '+r.status);}
+  const d=await r.json(); return JSON.parse((d.candidates?.[0]?.content?.parts?.[0]?.text||'').replace(/```json|```/g,'').trim());
+}
+async function callOpenAI(t,k,fw) {
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:200,temperature:0.1,messages:[{role:'system',content:SYS(fw)},{role:'user',content:'Classify: "'+t+'"'}]})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'OpenAI '+r.status);}
+  const d=await r.json(); return JSON.parse((d.choices?.[0]?.message?.content||'').replace(/```json|```/g,'').trim());
+}
+const CALLERS={claude:callClaude,gemini:callGemini,openai:callOpenAI};
+
+/* ─────────────────────────────────────────
+   CLASSIFY
+───────────────────────────────────────── */
+async function runClassify() {
+  const titles=getTitles(), key=document.getElementById('apiKey').value.trim();
+  if(!titles.length){setStatus('Please enter at least one content title.','err');return;}
+
+  if(!key){
+    setStatus('No API key detected — showing demo classifications. Enter your key for live AI.','warn');
+    S.results=titles.map(t=>DEMO.find(d=>d.title.toLowerCase()===t.toLowerCase())||{title:t,l1:'Knowledge Management',l2:'Content Classification',l3:'Taxonomy Support',l4:'AI-Assisted Tagging',confidence:'medium'});
+    renderResults(); return;
+  }
+
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true; btn.innerHTML='<div class="spinner" style="border-color:#000;border-top-color:transparent;"></div> Classifying…';
+  S.results=[]; let err=0;
+  setStatus(`Sending ${titles.length} title${titles.length>1?'s':''} to ${FW[S.fw].name} classifier…`,'info',true);
+  setProgress(0,'0 / '+titles.length);
+
+  for(let i=0;i<titles.length;i++){
+    try{ const r=await CALLERS[S.prov](titles[i],key,S.fw); S.results.push({title:titles[i],...r}); }
+    catch(e){ S.results.push({title:titles[i],l1:'Error',l2:'—',l3:'—',l4:e.message.slice(0,48),confidence:'low'}); err++; }
+    const p=Math.round(((i+1)/titles.length)*100);
+    setProgress(p,`${i+1} / ${titles.length} processed`);
+  }
+
+  btn.disabled=false; btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="5,3 19,12 5,21"/></svg> Classify Now';
+  setProgress(null); renderResults();
+  if(!err) setStatus(`✓ All ${S.results.length} titles classified successfully.`,'ok');
+  else if(err<S.results.length) setStatus(`Completed — ${err} error(s). Check highlighted rows.`,'warn');
+  else setStatus('Classification failed. Verify your API key and account credits.','err');
+}
+
+/* ─────────────────────────────────────────
+   RENDER
+───────────────────────────────────────── */
+function renderResults() {
+  buildDomFilter(); doFilter(); updateAnalytics();
+  ['csvBtn','jsonBtn','cpBtn'].forEach(id=>document.getElementById(id).style.display='flex');
+}
+
+function doFilter() {
+  const q=(document.getElementById('searchIn').value||'').toLowerCase();
+  const cf=(document.getElementById('confFil').value||'').toLowerCase();
+  const df=(document.getElementById('domFil').value||'').toLowerCase();
+  S.filtered=S.results.filter(r=>{
+    const txt=[r.title,r.l1,r.l2,r.l3,r.l4].join(' ').toLowerCase();
+    return(!q||txt.includes(q))&&(!cf||(r.confidence||'').toLowerCase()===cf)&&(!df||(r.l1||'').toLowerCase()===df);
+  });
+  renderTbl();
+  document.getElementById('fResCount').textContent=S.filtered.length+' / '+S.results.length;
+  document.getElementById('resCount').textContent=S.results.length+' results';
+}
+
+function srt(col) {
+  S.sortDir*=-1;
+  S.filtered.sort((a,b)=>{
+    const av=col==='confidence'?['high','medium','low'].indexOf(a.confidence):a.title;
+    const bv=col==='confidence'?['high','medium','low'].indexOf(b.confidence):b.title;
+    return av>bv?S.sortDir:av<bv?-S.sortDir:0;
+  });
+  renderTbl();
+}
+
+function renderTbl() {
+  const empty=document.getElementById('emptyState'), wrap=document.getElementById('tblWrap'), body=document.getElementById('tBody');
+  if(!S.filtered.length){empty.style.display='block';wrap.style.display='none';return;}
+  empty.style.display='none'; wrap.style.display='block';
+  body.innerHTML='';
+  S.filtered.forEach((r,i)=>{
+    const c=(r.confidence||'low').toLowerCase();
+    const cc={high:'c-hi',medium:'c-me',low:'c-lo'}[c]||'c-lo';
+    const tr=document.createElement('tr');
+    tr.style.animationDelay=Math.min(i*28,480)+'ms';
+    tr.innerHTML=`
+      <td class="tn">${String(i+1).padStart(2,'0')}</td>
+      <td style="max-width:240px;"><div style="font-size:13px;font-weight:500;color:var(--t1);line-height:1.4;">${esc(r.title)}</div></td>
+      <td>
+        <div class="taxpath">
+          <div class="taxrow"><span class="chip c1">${esc(r.l1)}</span><span class="tsep">›</span><span class="chip c2">${esc(r.l2)}</span></div>
+          <div class="taxrow"><span class="chip c3">${esc(r.l3)}</span><span class="tsep">›</span><span class="chip c4">${esc(r.l4)}</span></div>
+        </div>
+      </td>
+      <td><span class="conf ${cc}">${c.toUpperCase()}</span></td>
+      <td style="text-align:center;"><button class="abtn" onclick="cpRow(${i})" title="Copy row as JSON">📋</button></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function buildDomFilter() {
+  const sel=document.getElementById('domFil');
+  const doms=[...new Set(S.results.map(r=>r.l1).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">All Domains</option>';
+  doms.forEach(d=>{const o=document.createElement('option');o.value=d.toLowerCase();o.textContent=d;sel.appendChild(o);});
+}
+
+function updateAnalytics() {
+  const n=S.results.length, hi=S.results.filter(r=>r.confidence==='high').length,
+        me=S.results.filter(r=>r.confidence==='medium').length, lo=S.results.filter(r=>r.confidence==='low').length,
+        sc=n?Math.round((hi/n)*100):0;
+  document.getElementById('kTotal').textContent=n;
+  document.getElementById('kHigh').textContent=hi;
+  document.getElementById('kDomains').textContent=new Set(S.results.map(r=>r.l1).filter(Boolean)).size;
+  document.getElementById('kHealth').textContent=sc+'%';
+  document.getElementById('asideHealth').textContent=sc+'%';
+  const hf=document.getElementById('hbarFill');
+  hf.style.width=sc+'%'; hf.style.background=sc>=80?'var(--green)':sc>=50?'var(--yellow)':'var(--red)';
+  document.getElementById('bh').style.width=n?(hi/n*100)+'%':'0%';
+  document.getElementById('bm').style.width=n?(me/n*100)+'%':'0%';
+  document.getElementById('bl').style.width=n?(lo/n*100)+'%':'0%';
+  document.getElementById('nh').textContent=hi;
+  document.getElementById('nm').textContent=me;
+  document.getElementById('nl').textContent=lo;
+  const dc={};S.results.forEach(r=>{if(r.l1)dc[r.l1]=(dc[r.l1]||0)+1;});
+  const top=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById('domList').innerHTML=top.length
+    ?top.map(([d,c])=>`<div class="dom-item"><span class="dom-name">${esc(d)}</span><span class="dom-cnt">${c}</span></div>`).join('')
+    :'<span style="font-size:11px;color:var(--t3);">No data</span>';
+  document.getElementById('resCount').textContent=n+' results';
+}
+
+/* ─────────────────────────────────────────
+   EXPORT / COPY
+───────────────────────────────────────── */
+function cpRow(i) {
+  const r=S.filtered[i]; if(!r) return;
+  const fw=FW[S.fw], obj={title:r.title,framework:fw.name,confidence:r.confidence,taxonomy:{}};
+  fw.fields.forEach((f,j)=>{obj.taxonomy[f]=r['l'+(j+1)]||'';});
+  navigator.clipboard.writeText(JSON.stringify(obj,null,2)).then(()=>setStatus('Row copied to clipboard.','ok')).catch(()=>setStatus('Copy failed.','err'));
+}
+function cpAll() {
+  if(!S.results.length){setStatus('No results to copy.','warn');return;}
+  navigator.clipboard.writeText(JSON.stringify(S.results,null,2)).then(()=>setStatus('All results copied as JSON.','ok')).catch(()=>setStatus('Copy failed.','err'));
+}
+function expCSV() {
+  if(!S.results.length){setStatus('No results to export.','warn');return;}
+  const fw=FW[S.fw];
+  const hdr=['#','Title',...fw.fields,'Confidence','Framework','Provider'];
+  const rows=S.results.map((r,i)=>[i+1,'"'+r.title.replace(/"/g,'""')+'"',...['l1','l2','l3','l4'].map(k=>'"'+(r[k]||'').replace(/"/g,'""')+'"'),r.confidence||'',fw.name,S.prov]);
+  dl([hdr,...rows].map(r=>r.join(',')).join('\n'),'text/csv',`TaxoSort_${fw.name.replace(/\s/g,'_')}_${iso()}.csv`);
+}
+function expJSON() {
+  if(!S.results.length){setStatus('No results to export.','warn');return;}
+  const fw=FW[S.fw];
+  const out=S.results.map((r,i)=>{const o={index:i+1,title:r.title,framework:fw.name,provider:S.prov,confidence:r.confidence,taxonomy:{}};fw.fields.forEach((f,j)=>{o.taxonomy[f]=r['l'+(j+1)]||'';});return o;});
+  dl(JSON.stringify(out,null,2),'application/json',`TaxoSort_${iso()}.json`);
+}
+function dl(content,type,name) { const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click(); }
+function iso() { return new Date().toISOString().slice(0,10); }
+function esc(s) { return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'—'; }
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+(function init(){
+  selProv('claude'); selFw('standard');
+  S.results=[...DEMO]; S.filtered=[...DEMO];
+  buildDomFilter(); doFilter(); updateAnalytics();
+  ['csvBtn','jsonBtn','cpBtn'].forEach(id=>document.getElementById(id).style.display='flex');
+  document.getElementById('inputArea').value=Object.values(BANKS).flat().join('\n');
+  updCount();
+})();
+</script>
+</body>
+</html>
