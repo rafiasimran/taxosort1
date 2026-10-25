@@ -1,8 +1,8 @@
 # TaxoSort: AI Learning Content Classifier
 
-Companies have thousands of courses in their learning platforms, and most of them are tagged badly or not at all. TaxoSort fixes that. You paste in a list of course titles, pick a framework, and an LLM sorts every title into a clean, structured taxonomy you can export straight into an LMS.
+Companies have thousands of courses in their learning platforms, and most of them are tagged badly or not at all. TaxoSort is my attempt at fixing that. You paste in a list of course titles, pick a framework, and an LLM sorts every title into a clean, structured taxonomy you can export straight into an LMS.
 
-**[→ Open the live demo](https://rafiasimran.github.io/taxosort1/taxosort1.html)**. Demo mode works without an API key.
+**[Live demo](https://rafiasimran.github.io/taxosort1/taxosort1.html)** (demo mode works without an API key)
 
 ## What it does
 
